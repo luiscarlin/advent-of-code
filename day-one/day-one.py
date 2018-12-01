@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
+# ./day-one.py ./input.txt
+
 import sys
 import os
-
-# ./day-one.py ./input.txt
 
 def main():
   filepath = sys.argv[1]
@@ -13,11 +13,9 @@ def main():
     sys.exit()
 
   frequencies = []
-
   accumulator = 0
 
   (total, first_repeated_freq) = process_file(accumulator, filepath, frequencies)
-
   print("total:", total)
 
   while(first_repeated_freq is 'NONE'):
@@ -35,7 +33,6 @@ def calculate(op, num, acc):
   return acc
 
 def process_file(accumulator, filepath, frequencies):
-
   if (accumulator is 0):
     frequencies.append(accumulator)
 
@@ -56,7 +53,6 @@ def process_file(accumulator, filepath, frequencies):
       frequencies.append(accumulator)
 
   return (accumulator, first_repeated_freq)
-
 
 if __name__ == '__main__':
    main()
