@@ -3,6 +3,8 @@
 import sys
 import os
 
+# ./day-one.py ./input.txt
+
 def main():
   filepath = sys.argv[1]
 
