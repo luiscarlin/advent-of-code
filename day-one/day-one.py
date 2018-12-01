@@ -10,7 +10,34 @@ def main():
     print("File path {} does not exist. Exiting...".format(filepath))
     sys.exit()
 
-  total = 0
+  frequencies = []
+
+  accumulator = 0
+
+  (total, first_repeated_freq) = process_file(accumulator, filepath, frequencies)
+
+  print("total:", total)
+
+  while(first_repeated_freq is 'NONE'):
+    (total, first_repeated_freq) = process_file(total, filepath, frequencies)
+
+  print("first repeated:", first_repeated_freq)
+
+def calculate(op, num, acc):
+  if (op is '+'):
+    acc += num
+
+  if (op is '-'):
+    acc -= num
+
+  return acc
+
+def process_file(accumulator, filepath, frequencies):
+
+  if (accumulator is 0):
+    frequencies.append(accumulator)
+
+  first_repeated_freq = 'NONE'
 
   with open(filepath) as fp:
     for line in fp:
@@ -19,13 +46,15 @@ def main():
       operation = line[0]
       num = int(line[1:])
 
-      if (operation is '+'):
-        total += num
+      accumulator = calculate(operation, num, accumulator)
 
-      if (operation is '-'):
-        total -= num
+      if (accumulator in frequencies and first_repeated_freq is 'NONE'):
+        first_repeated_freq = accumulator
 
-  print("total:", total)
+      frequencies.append(accumulator)
+
+  return (accumulator, first_repeated_freq)
+
 
 if __name__ == '__main__':
    main()
