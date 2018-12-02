@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# ./day-one.py ./input.txt
+# ./freq_calc.py ./input.txt
 
 import sys
 import os
