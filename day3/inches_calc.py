@@ -33,7 +33,7 @@ def main():
           no_overlaps = False
 
     if no_overlaps:
-      print ('clain with no overlaps', id)
+      print ('claim with no overlaps', id)
 
 
 def parse_claim(claim):
