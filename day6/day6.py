@@ -2,9 +2,8 @@
 
 import collections
 
-
 def main():
-  # part_one()
+  part_one()
   part_two()
 
 def part_one():
