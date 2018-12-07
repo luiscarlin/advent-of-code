@@ -2,7 +2,12 @@
 
 import collections
 
+
 def main():
+  # part_one()
+  part_two()
+
+def part_one():
   coordinates = get_coordinates()
 
   max_x, max_y, min_x, min_y = find_corners(coordinates)
@@ -33,6 +38,31 @@ def main():
   biggest_area = max(coordinates, key=coordinates.get)
   print('biggest area around', biggest_area)
   print('with locations =', coordinates[biggest_area])
+
+def part_two():
+  coordinates = get_coordinates()
+
+  max_x, max_y, min_x, min_y = find_corners(coordinates)
+
+  coordinates = list(coordinates.keys())
+
+  limit = 10000
+
+  location_counter = 0
+
+  for x in range(min_x, max_x):
+    for y in range(min_y, max_y):
+      total_distance = 0
+
+      for coordinate in coordinates:
+        distance = calculate_distance((x, y), coordinate)
+
+        total_distance += distance
+
+      if total_distance < limit:
+        location_counter += 1
+
+  print('size of region', location_counter)
 
 def get_coordinates():
   coordinates = collections.defaultdict(int)
