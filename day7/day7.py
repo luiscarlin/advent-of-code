@@ -3,6 +3,87 @@
 from collections import defaultdict, deque
 
 def main():
+  # part1()
+  part2()
+
+def get_step_time(letter):
+  return ord(letter) - 4
+
+def do_work(current):
+  work_done = []
+
+  for k in current:
+    current[k] = current[k] - 1
+
+    if current[k] == 0:
+      work_done.append(k)
+
+  for done in work_done:
+    del current[done]
+
+  return current, work_done
+
+def has_prereqs(vertex, prereqs):
+  return not prereqs[vertex] == []
+
+def assign_work(number_workers, current_work, available_vertices, prerequisites):
+  available_vertices = sorted(list(set(available_vertices)))
+
+  if (len(current_work)) == number_workers:
+    return current_work, available_vertices
+
+  for possible_step in list(available_vertices):
+    if has_prereqs(possible_step, prerequisites):
+      continue
+
+    if len(current_work) < number_workers:
+      current_work[possible_step] = get_step_time(possible_step)
+      available_vertices.remove(possible_step)
+
+  print('current work', current_work)
+  print('available vertices', available_vertices)
+
+  return current_work, available_vertices
+
+def remove_prereq(done_step, child_to_parents, parent_to_children):
+  for child in parent_to_children[done_step]:
+    child_to_parents[child].remove(done_step)
+
+  return child_to_parents, parent_to_children
+
+
+def part2():
+  parent_to_children, child_to_parents = get_relationships()
+
+  roots = set(parent_to_children.keys()).difference(set(child_to_parents))
+  roots_list = list(roots)
+
+  current_work = defaultdict(int)
+  number_workers = 5
+  time = 0
+  available_vertices = roots_list
+
+  current_work, available_vertices = assign_work(number_workers, current_work, available_vertices, child_to_parents)
+
+  while len(current_work) > 0:
+    time += 1
+    print ('current time', time)
+
+    current_work, work_done = do_work(current_work)
+
+    for done_step in work_done:
+      child_to_parents, parent_to_children = remove_prereq(done_step, child_to_parents, parent_to_children)
+
+      new_possible_vertices = parent_to_children[done_step]
+      available_vertices.extend(new_possible_vertices)
+
+    if len(available_vertices) > 0:
+      current_work, available_vertices = assign_work(number_workers, current_work, available_vertices, child_to_parents)
+
+  print('time', time)
+
+
+def part1():
   parent_to_children, child_to_parents = get_relationships()
 
   roots = set(parent_to_children.keys()).difference(set(child_to_parents))
