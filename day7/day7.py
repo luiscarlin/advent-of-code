@@ -3,7 +3,7 @@
 from collections import defaultdict, deque
 
 def main():
-  # part1()
+  part1()
   part2()
 
 def get_step_time(letter):
@@ -40,9 +40,6 @@ def assign_work(number_workers, current_work, available_vertices, prerequisites)
       current_work[possible_step] = get_step_time(possible_step)
       available_vertices.remove(possible_step)
 
-  print('current work', current_work)
-  print('available vertices', available_vertices)
-
   return current_work, available_vertices
 
 def remove_prereq(done_step, child_to_parents, parent_to_children):
@@ -67,7 +64,6 @@ def part2():
 
   while len(current_work) > 0:
     time += 1
-    print ('current time', time)
 
     current_work, work_done = do_work(current_work)
 
@@ -80,7 +76,7 @@ def part2():
     if len(available_vertices) > 0:
       current_work, available_vertices = assign_work(number_workers, current_work, available_vertices, child_to_parents)
 
-  print('time', time)
+  print('time:', time)
 
 
 def part1():
