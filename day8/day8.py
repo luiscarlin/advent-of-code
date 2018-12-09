@@ -47,8 +47,25 @@ def add_metadata(tree):
 
   return total
 
-root = construct_tree()
-total = add_metadata(root)
+def get_value(tree):
+  value = 0
 
-print(total)
+  if len(tree.children) == 0:
+    value = sum(tree.metadata)
+  else:
+    for entry in tree.metadata:
+      if 0 < entry <= len(tree.children):
+        value += get_value(tree.children[entry - 1])
 
+  return value
+
+def main():
+  root = construct_tree()
+  total = add_metadata(root)
+  print('total sum metadata:', total)
+
+  value = get_value(root)
+  print('value is:', value)
+
+if __name__ == '__main__':
+  main()
