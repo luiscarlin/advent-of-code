@@ -61,6 +61,7 @@ def get_value(tree):
 
 def main():
   root = construct_tree()
+
   total = add_metadata(root)
   print('total sum metadata:', total)
 
