@@ -23,7 +23,7 @@ def main():
   num_seconds = 0
 
   while True:
-    coordinates = move(coordinates, change)
+    move(coordinates, change)
     area = get_area(coordinates)
 
     if area > min_area:
@@ -35,11 +35,10 @@ def main():
 
     num_seconds += 1
 
-  print('hidden message')
+  print('hidden message:')
   pretty_print(min_coordinates)
 
-  print('number of seconds =', num_seconds)
-
+  print('number of seconds:', num_seconds)
 
 def find_corners(coordinates):
   min_x = min([ x for x, y in coordinates ])
@@ -71,7 +70,6 @@ def pretty_print(coordinates):
 def move(coords, change):
   for pos in range(len(coords)):
     coords[pos] = (coords[pos][0] + change[pos][0], coords[pos][1] + change[pos][1])
-  return coords
 
 if __name__ == '__main__':
   main()
