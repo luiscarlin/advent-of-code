@@ -35,9 +35,10 @@ def main():
 
     num_seconds += 1
 
+  print('hidden message')
   pretty_print(min_coordinates)
 
-  print('number of seconds', num_seconds)
+  print('number of seconds =', num_seconds)
 
 
 def find_corners(coordinates):
