@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 def get_total(current_state, offset):
   total = 0
 
@@ -9,47 +8,43 @@ def get_total(current_state, offset):
 
     if current_state[i] == '#':
       total += pot
-
   return total
 
-lines = open('input.txt').readlines()
 
-initial_state = lines[0].split(': ')[1].strip()
+def main():
+  lines = open('input.txt').readlines()
 
-tranformations = {}
+  initial_state = lines[0].split(': ')[1].strip()
 
-for line in lines[2:]:
-  left, right = line.split(' => ')
-  tranformations[left.strip()] = right.strip()
+  tranformations = {}
 
-current_state = '.....' + initial_state + '.....'
+  for line in lines[2:]:
+    left, right = line.split(' => ')
+    tranformations[left.strip()] = right.strip()
 
-prev_total = 0
-offset = 0
+  current_state = '.....' + initial_state + '.....'
 
-for iteration in range(50000000000):
-  next_state = current_state
+  prev_total = 0
+  offset = 0
 
-  for i in range(len(current_state)):
-    # i, i+1, i+2, i+3, i+4
-    center = i + 2
-    pattern = current_state[i: i + 5]
+  for generations in range(1, 500):
+    next_state = current_state
 
-    if (pattern in tranformations):
-      next_state = next_state[:center] + tranformations[pattern] + next_state[center + 1:]
+    for i in range(len(current_state)):
+      center = i + 2
+      pattern = current_state[i: i + 5]
 
-  # print('=>', current_state)
-  # print('=>', next_state)
-  current_state = '.....' + next_state + '.....'
-  offset += 5
+      if (pattern in tranformations):
+        next_state = next_state[:center] + tranformations[pattern] + next_state[center + 1:]
 
-  total = get_total(current_state, offset)
-  print('generation: ', iteration, 'total:', total, 'change', prev_total - total)
+    current_state = '.....' + next_state + '.....'
+    offset += 5
 
-  prev_total = total
+    total = get_total(current_state, offset)
+    print('generation: ', generations, 'total:', total, 'different:', total - prev_total)
+
+    prev_total = total
 
 
-# print('after 50 billion generations')
-
-# print('is', '.....' + initial_state + '............................................................................')
-# print('fs', current_state)
+if __name__ == '__main__':
+  main()
