@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+from collection import defaultdict
 
 ELF_TYPE = 'E'
 GOBLIN_TYPE = 'G'
@@ -30,9 +31,9 @@ def main():
     for unit in units:
       target, distance, enemies_left = get_next_target(unit, units)
 
-  #     if not target:
-  #       print('No more targets left')
-  #       sys.exit(0)
+      if enemies_left == 0:
+        print('No more targets left')
+        sys.exit(0)
 
   #     if distance == 0:
   #       attack(unit, target)
@@ -46,8 +47,22 @@ def move(unit, target):
   print('moving')
 
 def get_next_target(current, all):
+  enemies_left = 0
+  enemy = ''
+  all_distances = defaultdict(int)
 
-  return ''
+  for unit in all:
+    if unit.unit_type != current.unit_type:
+      enemies_left += 1
+
+      distance = get_distance(current, unit):
+
+
+
+
+
+
+  return enemy, distance, enemies_left
 
 def attack(attacker, victim):
   print('attacking')
