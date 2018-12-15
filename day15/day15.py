@@ -1,30 +1,23 @@
 #!/usr/bin/env python3
 
+import sys
+
+ELF_TYPE = 'E'
+GOBLIN_TYPE = 'G'
+
 class Unit:
-  def __init__(self, row, col):
+  def __init__(self, row, col, unit_type):
     self.row = row
     self.col = col
+    self.unit_type = unit_type
     self.attack_power = 3
     self.hit_points = 200
 
-class Goblin(Unit):
-  def __init__(self, row, col):
-    Unit.__init__(self, row, col)
-
   def __str__(self):
-    return 'G'
-
-class Elf(Unit):
-  def __init__(self, row, col):
-    Unit.__init__(self, row, col)
-
-  def __str__(self):
-    return 'E'
+    return self.unit_type
 
 def main():
   cave, units = parse_input()
-
-  show_units(units)
 
   print('initial state')
   show_all(cave, units)
@@ -32,15 +25,32 @@ def main():
   for round in range(1, 4):
     print()
 
-    # sort units
+    units = sorted(units, key = lambda unit: (unit.row, unit.col))
 
-    # for unit in units:
-      # find target
+    for unit in units:
+      target, distance, enemies_left = get_next_target(unit, units)
 
+  #     if not target:
+  #       print('No more targets left')
+  #       sys.exit(0)
+
+  #     if distance == 0:
+  #       attack(unit, target)
+  #     else:
+  #       move(unit, target)
 
     print('end of round', round)
     show_all(cave, units)
 
+def move(unit, target):
+  print('moving')
+
+def get_next_target(current, all):
+
+  return ''
+
+def attack(attacker, victim):
+  print('attacking')
 
 def show_all(cave, units):
   for row in range(len(cave)):
@@ -67,11 +77,11 @@ def parse_input():
 
   for row in range(len(cave)):
     for col in range(len(cave[row])):
-      if cave[row][col] == 'G':
-        units.append(Goblin(row, col))
+      if cave[row][col] == GOBLIN_TYPE:
+        units.append(Unit(row, col, GOBLIN_TYPE))
         cave[row][col] = '.'
-      elif cave[row][col] == 'E':
-        units.append(Elf(row, col))
+      elif cave[row][col] == ELF_TYPE:
+        units.append(Unit(row, col, ELF_TYPE))
         cave[row][col] = '.'
   return cave, units
 
