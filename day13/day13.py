@@ -59,10 +59,6 @@ class Cart:
 def main():
   carts, tracks = parse_input()
 
-  # print('before')
-  # for cart in carts:
-  #   print(cart.row, cart.col)
-
   while True:
     if len(carts) == 1:
       print('location of the last cart left: {},{}'.format(carts[0].col, carts[0].row))
@@ -103,11 +99,6 @@ def main():
       cart.row = next_row
       cart.col = next_col
 
-  for cart in carts:
-    print(cart.row, cart.col)
-
-
-
 def print_all(carts, tracks):
   for row in range(len(tracks)):
     for col in range(len(tracks[row])):
@@ -146,18 +137,11 @@ def parse_input():
   carts = []
   track = []
 
-  # for line in open('input.txt'):
-  #   track.append(list(line.strip('/n')))
-
   for line in open('input.txt'):
     if line:
       track.append([c for c in line])
 
-  # print(track)
-
   carts = remove_carts_from_grid(track)
-
-
   return carts, track
 
 if __name__ == '__main__':
