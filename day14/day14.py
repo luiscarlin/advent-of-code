@@ -4,7 +4,6 @@ def part2():
   print('\npart2\n----\n')
 
   pattern = '824501'
-  # pattern = '59414'
 
   recipes = '37'
 
@@ -46,7 +45,7 @@ def part1():
 
   last_10 = ''.join(recipes_str_list)
 
-  print('last 10:', last_10)
+  print('Last 10:', last_10)
 
 def main():
   part1()
