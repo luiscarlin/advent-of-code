@@ -1,34 +1,73 @@
 #!/usr/bin/env python3
 
-# record_after = 9
-record_after = 824501
 
-recipes = [3, 7]
+def part2():
+  print('part2')
 
+  pattern = '824501'
 
-# 51589167792510710
-# 5158916779
+  recipes = [3, 7]
 
-elf1_index = 0
-elf2_index = 1
+  # 51589167792510710
+  # 5158916779
 
-while True:
-  if len(recipes) == record_after + 10:
-    break
+  elf1_index = 0
+  elf2_index = 1
 
-  sum = recipes[elf1_index] + recipes[elf2_index]
+  while True:
+    recipes_str_list = list(map(str, recipes))
+    recipes_str = ''.join(recipes_str_list)
 
-  sum_list = list(map(int, list(str(sum))))
+    if pattern in recipes_str:
+       print('pattern found')
+       break
 
-  recipes.extend(sum_list)
+    sum = recipes[elf1_index] + recipes[elf2_index]
 
-  elf1_index = ((recipes[elf1_index] + 1) + elf1_index) % len(recipes)
-  elf2_index = ((recipes[elf2_index] + 1) + elf2_index) % len(recipes)
+    sum_list = list(map(int, list(str(sum))))
 
-# print('recipes:', recipes)
+    recipes.extend(sum_list)
 
-recipes_str_list = list(map(str, recipes[record_after:]))
+    elf1_index = ((recipes[elf1_index] + 1) + elf1_index) % len(recipes)
+    elf2_index = ((recipes[elf2_index] + 1) + elf2_index) % len(recipes)
 
-last_10 = ''.join(recipes_str_list)
+def part1():
+  print('part1')
+  # record_after = 9
+  record_after = 824501
 
-print('last 10:', last_10)
+  recipes = [3, 7]
+
+  # 51589167792510710
+  # 5158916779
+
+  elf1_index = 0
+  elf2_index = 1
+
+  while True:
+    if len(recipes) == record_after + 10:
+      break
+
+    sum = recipes[elf1_index] + recipes[elf2_index]
+
+    sum_list = list(map(int, list(str(sum))))
+
+    recipes.extend(sum_list)
+
+    elf1_index = ((recipes[elf1_index] + 1) + elf1_index) % len(recipes)
+    elf2_index = ((recipes[elf2_index] + 1) + elf2_index) % len(recipes)
+
+  # print('recipes:', recipes)
+
+  recipes_str_list = list(map(str, recipes[record_after:]))
+
+  last_10 = ''.join(recipes_str_list)
+
+  print('last 10:', last_10)
+
+def main():
+  # part1()
+  part2()
+
+if __name__ == '__main__':
+  main()
