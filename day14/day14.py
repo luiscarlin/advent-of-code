@@ -4,7 +4,6 @@ def part2():
   print('\npart2\n----\n')
 
   pattern = '824501'
-
   recipes = '37'
 
   elf1_index = 0
@@ -21,31 +20,21 @@ def part2():
 def part1():
   print('\npart1\n----\n')
 
-  record_after = 824501
-
-  recipes = [3, 7]
+  start = '824501'
+  recipes = '37'
 
   elf1_index = 0
   elf2_index = 1
 
-  while True:
-    if len(recipes) == record_after + 10:
-      break
+  while len(recipes) != int(start) + 10:
+    sum = int(recipes[elf1_index]) + int(recipes[elf2_index])
 
-    sum = recipes[elf1_index] + recipes[elf2_index]
+    recipes += str(sum)
 
-    sum_list = list(map(int, list(str(sum))))
+    elf1_index = (int(recipes[elf1_index]) + 1 + elf1_index) % len(recipes)
+    elf2_index = (int(recipes[elf2_index]) + 1 + elf2_index) % len(recipes)
 
-    recipes.extend(sum_list)
-
-    elf1_index = ((recipes[elf1_index] + 1) + elf1_index) % len(recipes)
-    elf2_index = ((recipes[elf2_index] + 1) + elf2_index) % len(recipes)
-
-  recipes_str_list = list(map(str, recipes[record_after:]))
-
-  last_10 = ''.join(recipes_str_list)
-
-  print('Last 10:', last_10)
+  print('Last 10:', recipes[-10:])
 
 def main():
   part1()
