@@ -4,6 +4,8 @@ class Unit:
   def __init__(self, row, col):
     self.row = row
     self.col = col
+    self.attack_power = 3
+    self.hit_points = 200
 
 class Goblin(Unit):
   def __init__(self, row, col):
@@ -20,27 +22,37 @@ class Elf(Unit):
     return 'E'
 
 def main():
-  cave, goblins, elves = parse_input()
-  show_all(cave, goblins, elves)
+  cave, units = parse_input()
 
-def show_all(cave, goblins, elves):
+  show_units(units)
+
+  print('initial state')
+  show_all(cave, units)
+
+  for round in range(1, 4):
+    print()
+
+    # sort units
+
+    # for unit in units:
+      # find target
+
+
+    print('end of round', round)
+    show_all(cave, units)
+
+
+def show_all(cave, units):
   for row in range(len(cave)):
     for col in range(len(cave[row])):
 
       unit_in_spot = False
 
-      for goblin in goblins:
-        if goblin.row == row and goblin.col == col:
-          print(goblin, end = '')
+      for unit in units:
+        if unit.row == row and unit.col == col:
+          print(unit, end = '')
           unit_in_spot = True
           break
-
-      if not unit_in_spot:
-        for elf in elves:
-          if elf.row == row and elf.col == col:
-            print(elf, end = '')
-            unit_in_spot = True
-            break
 
       if not unit_in_spot:
         print(cave[row][col], end = '')
@@ -48,8 +60,7 @@ def show_all(cave, goblins, elves):
 
 def parse_input():
   cave = []
-  goblins = []
-  elves = []
+  units = []
 
   for line in open('input.txt'):
     cave.append([c for c in line.strip()])
@@ -57,12 +68,16 @@ def parse_input():
   for row in range(len(cave)):
     for col in range(len(cave[row])):
       if cave[row][col] == 'G':
-        goblins.append(Goblin(row, col))
+        units.append(Goblin(row, col))
         cave[row][col] = '.'
       elif cave[row][col] == 'E':
-        elves.append(Elf(row, col))
+        units.append(Elf(row, col))
         cave[row][col] = '.'
-  return cave, goblins, elves
+  return cave, units
+
+def show_units(units):
+  for unit in units:
+    print("{} at ({},{}) with attack power={} and hit points={}".format(unit, unit.row, unit.col, unit.attack_power, unit.hit_points))
 
 if __name__ == '__main__':
   main()
