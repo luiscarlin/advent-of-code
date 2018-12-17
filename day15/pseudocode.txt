@@ -1,0 +1,52 @@
+main:
+  get all units from the file
+  get the cave map from the file
+
+  round = 0
+  loop until no enemies left:
+    start round
+
+    sort list of units
+
+    for each unit in list of units:
+      if this current unit is dead, skip it
+
+      find the enemies for this unit that are alive
+      if there are no enemies left => game is over
+
+      search in your range for any enemies
+
+      if there are enemies in range:
+        attack(current unit, list of enemies around you)
+
+      if there are no enemies around you:
+        move(current unit, list of enemies)
+    end of round (round += 1)
+
+  final result = number of full rounds * hit points for winners
+
+attack(current unit, list of enemies around you):
+  if multiple enemies around current unit:
+    select the one with the least health
+
+  reduce the enemy HP by the current unit's attack power
+  if the enemy HP is less than 0: it's dead
+
+
+move(current unit, list of enemies):
+  get paths to all enemies(current unit, list of enemies)
+  get the path with minimum distance
+  if tie in minimum distance:
+    select the one in reading order
+  move the current unit to the space in the cave
+
+
+get paths to all enemies(current unit, list of enemies):
+  for all enemies that are still alive:
+    find the shortest path from the current unit to the enemy
+    if tie in shortest paths:
+      sort them in reading order
+
+
+
+

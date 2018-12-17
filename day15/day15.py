@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
-from collection import defaultdict
+from collections import deque, defaultdict
+import networkx as nx
 
 ELF_TYPE = 'E'
 GOBLIN_TYPE = 'G'
@@ -13,6 +14,10 @@ class Unit:
     self.unit_type = unit_type
     self.attack_power = 3
     self.hit_points = 200
+    self.is_alive = True
+
+  def get_coords(self):
+    return (self.row, self.col)
 
   def __str__(self):
     return self.unit_type
@@ -20,52 +25,95 @@ class Unit:
 def main():
   cave, units = parse_input()
 
+  G = generate_graph(cave)
+
   print('initial state')
   show_all(cave, units)
 
-  for round in range(1, 4):
-    print()
+  round = 0
+  all_enemies_dead = False
 
-    units = sorted(units, key = lambda unit: (unit.row, unit.col))
+  while not all_enemies_dead:
+    print('starting round')
 
-    for unit in units:
-      target, distance, enemies_left = get_next_target(unit, units)
+    # remove this later
+    if round == 5:
+      break
 
-      if enemies_left == 0:
-        print('No more targets left')
-        sys.exit(0)
+    units = sorted(units, key = lambda unit: unit.get_coords())
 
-  #     if distance == 0:
-  #       attack(unit, target)
-  #     else:
-  #       move(unit, target)
+    for current_unit in units:
 
+      if not current_unit.is_alive:
+        continue
+
+      enemies = [other for other in units if other.unit_type != current_unit.unit_type and other.is_alive]
+
+      if not enemies:
+        print('game over. All your enemies are dead')
+        all_enemies_dead = True
+        break
+
+      current_unit_neighbors = get_neighbors(*current_unit.get_coords())
+      print('current unit neighbors', current_unit_neighbors)
+
+      enemies_in_range = [enemy for enemy in enemies if enemy.get_coords() in current_unit_neighbors]
+      print('enemies in range', enemies_in_range)
+
+      if enemies_in_range:
+        # TODO implement attack and call it
+        print('attack')
+      else:
+        move(G, current_unit, units, enemies )
+    round += 1
     print('end of round', round)
     show_all(cave, units)
 
-def move(unit, target):
+def move(G, current_unit, units, enemies ):
+  source = current_unit.get_coords()
+  target_list = [enemy.get_coords() for enemy in enemies]
+  blockers = [unit.get_coords() for unit in units if unit.is_alive]
+
+  enemy_paths = find_shortest_path_to_enemies(G, source, blockers, target_list)
   print('moving')
 
-def get_next_target(current, all):
-  enemies_left = 0
-  enemy = ''
-  all_distances = defaultdict(int)
-
-  for unit in all:
-    if unit.unit_type != current.unit_type:
-      enemies_left += 1
-
-      distance = get_distance(current, unit):
+def find_shortest_path_to_enemies(G, source, blockers, target_list):
+  print('get paths to enemies')
 
 
+  for target in target_list:
+    path = bfs(G, source, blockers, target)
 
+def bfs(G, source, blockers, target):
+  visited = set()
+  visited.add(source)
 
+  q = deque()
+  q.append(source)
 
+  prev = defaultdict(int)
 
-  return enemy, distance, enemies_left
+  while q:
+    node = q.popleft()
 
-def attack(attacker, victim):
-  print('attacking')
+    neighbors = [n for n in G.neighbors(node)]
+    neighbors = sorted(neighbors)
+
+    for next in neighbors:
+      if next not in visited and next not in blockers:
+        q.append(next)
+        visited.add(next)
+        prev[next] = node
+
+  path = []
+  parent = prev[target]
+
+  while parent != 0:
+    path.append(parent)
+    parent = prev[parent]
+
+  path.reverse()
+  return path
 
 def show_all(cave, units):
   for row in range(len(cave)):
@@ -102,7 +150,26 @@ def parse_input():
 
 def show_units(units):
   for unit in units:
-    print("{} at ({},{}) with attack power={} and hit points={}".format(unit, unit.row, unit.col, unit.attack_power, unit.hit_points))
+    print("{} at {} with attack power={} and hit points={}".format(unit, unit.get_coords(), unit.attack_power, unit.hit_points))
+
+def generate_graph(cave):
+  G = nx.Graph()
+
+  for row in range(len(cave)):
+    for col in range(len(cave[row])):
+      if cave[row][col] == ".":
+        neighbors = get_neighbors(row, col)
+
+        for (r, c) in neighbors:
+          if 0 <= r < len(cave) and 0 <= c < len(cave[r]):
+            if cave[r][c] == '.':
+              G.add_edge((row, col), (r, c))
+  return G
+
+def get_neighbors(x, y):
+  # up , down, left, right
+  directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+  return list(map(lambda direction: (x + direction[0], y + direction[1]), directions))
 
 if __name__ == '__main__':
   main()
