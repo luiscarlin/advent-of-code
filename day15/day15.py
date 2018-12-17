@@ -19,6 +19,15 @@ class Unit:
   def get_coords(self):
     return (self.row, self.col)
 
+  def set_pos(self, row, col):
+    self.row = row
+    self.col = col
+
+  def attacked_with_power(self, power):
+    self.hit_points -= power
+    if self.hit_points <= 0:
+      self.is_alive = False
+
   def __str__(self):
     return self.unit_type
 
@@ -36,14 +45,9 @@ def main():
   while not all_enemies_dead:
     print('starting round')
 
-    # remove this later
-    if round == 5:
-      break
-
     units = sorted(units, key = lambda unit: unit.get_coords())
 
     for current_unit in units:
-
       if not current_unit.is_alive:
         continue
 
@@ -55,43 +59,61 @@ def main():
         break
 
       current_unit_neighbors = get_neighbors(*current_unit.get_coords())
-      print('current unit neighbors', current_unit_neighbors)
 
       enemies_in_range = [enemy for enemy in enemies if enemy.get_coords() in current_unit_neighbors]
-      print('enemies in range', enemies_in_range)
 
       if enemies_in_range:
-        # TODO implement attack and call it
-        print('attack')
+        attack(current_unit, enemies_in_range)
       else:
-        move(G, current_unit, units, enemies )
+        move(G, current_unit, units, enemies)
+
     round += 1
     print('end of round', round)
     show_all(cave, units)
+
+def attack(current_unit, enemies_in_range):
+  enemy_to_attack = min(enemies_in_range, key = lambda enemy: enemy.hit_points)
+
+  enemy_to_attack.attacked_with_power(current_unit.attack_power)
 
 def move(G, current_unit, units, enemies ):
   source = current_unit.get_coords()
   target_list = [enemy.get_coords() for enemy in enemies]
   blockers = [unit.get_coords() for unit in units if unit.is_alive]
 
-  enemy_paths = find_shortest_path_to_enemies(G, source, blockers, target_list)
-  print('moving')
+  enemy_path = find_shortest_path(G, source, blockers, target_list)
 
-def find_shortest_path_to_enemies(G, source, blockers, target_list):
-  print('get paths to enemies')
+  if enemy_path:
+    next_step = enemy_path[1:][0]
+    current_unit.set_pos(*next_step)
 
+def find_shortest_path(G, source, blockers, target_list):
+  paths_to_all_enemies = []
 
   for target in target_list:
-    path = bfs(G, source, blockers, target)
+    paths_to_all_enemies.append(bfs(G, source, blockers, target))
+
+  distances = [len(path) for path in paths_to_all_enemies]
+
+  min_distance = min(distances)
+
+  min_distance_paths = [path for path in paths_to_all_enemies if len(path) == min_distance]
+
+  if len(min_distance_paths) == 1:
+    return min_distance_paths[0]
+
+  return min(min_distance_paths)
 
 def bfs(G, source, blockers, target):
+  blockers.remove(target)
+
   visited = set()
   visited.add(source)
 
   q = deque()
   q.append(source)
 
-  prev = defaultdict(int)
+  prev = defaultdict(tuple)
 
   while q:
     node = q.popleft()
@@ -106,14 +128,19 @@ def bfs(G, source, blockers, target):
         prev[next] = node
 
   path = []
+  path.append(target)
   parent = prev[target]
 
-  while parent != 0:
+  while parent:
     path.append(parent)
     parent = prev[parent]
 
   path.reverse()
-  return path
+
+  if path[0] == source:
+    return path
+  else:
+    return []
 
 def show_all(cave, units):
   for row in range(len(cave)):
@@ -122,7 +149,7 @@ def show_all(cave, units):
       unit_in_spot = False
 
       for unit in units:
-        if unit.row == row and unit.col == col:
+        if unit.row == row and unit.col == col and unit.is_alive:
           print(unit, end = '')
           unit_in_spot = True
           break
