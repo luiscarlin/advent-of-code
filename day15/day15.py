@@ -41,10 +41,10 @@ def main():
 
   round = 0
   all_enemies_dead = False
+  winner = ''
 
   while not all_enemies_dead:
-    print('starting round')
-
+    print()
     units = sorted(units, key = lambda unit: unit.get_coords())
 
     for current_unit in units:
@@ -54,22 +54,43 @@ def main():
       enemies = [other for other in units if other.unit_type != current_unit.unit_type and other.is_alive]
 
       if not enemies:
-        print('game over. All your enemies are dead')
+        print('GAME OVER! All your enemies are dead!')
+        show_units(units)
         all_enemies_dead = True
+        winner = current_unit.unit_type
         break
 
       current_unit_neighbors = get_neighbors(*current_unit.get_coords())
-
       enemies_in_range = [enemy for enemy in enemies if enemy.get_coords() in current_unit_neighbors]
+
+      if not enemies_in_range:
+        move(G, current_unit, units, enemies)
+        current_unit_neighbors = get_neighbors(*current_unit.get_coords())
+        enemies_in_range = [enemy for enemy in enemies if enemy.get_coords() in current_unit_neighbors]
 
       if enemies_in_range:
         attack(current_unit, enemies_in_range)
-      else:
-        move(G, current_unit, units, enemies)
+
+    if all_enemies_dead:
+      break
 
     round += 1
     print('end of round', round)
     show_all(cave, units)
+
+  print('\n-----------')
+  print('winner:', winner)
+  winners = [unit for unit in units if unit.unit_type == winner and unit.is_alive]
+
+  sum_hit_points = 0
+
+  for winner in winners:
+    sum_hit_points += winner.hit_points
+
+  print('winner hit points:', sum_hit_points)
+  print('last round:', round)
+
+  print('answer part1:', sum_hit_points * round)
 
 def attack(current_unit, enemies_in_range):
   enemy_to_attack = min(enemies_in_range, key = lambda enemy: enemy.hit_points)
@@ -83,7 +104,7 @@ def move(G, current_unit, units, enemies ):
 
   enemy_path = find_shortest_path(G, source, blockers, target_list)
 
-  if enemy_path:
+  if len(enemy_path) > 1:
     next_step = enemy_path[1:][0]
     current_unit.set_pos(*next_step)
 
@@ -143,6 +164,8 @@ def bfs(G, source, blockers, target):
     return []
 
 def show_all(cave, units):
+  unit_info = []
+
   for row in range(len(cave)):
     for col in range(len(cave[row])):
 
@@ -150,6 +173,7 @@ def show_all(cave, units):
 
       for unit in units:
         if unit.row == row and unit.col == col and unit.is_alive:
+          unit_info.append((unit.unit_type, unit.get_coords(), unit.hit_points))
           print(unit, end = '')
           unit_in_spot = True
           break
@@ -157,6 +181,9 @@ def show_all(cave, units):
       if not unit_in_spot:
         print(cave[row][col], end = '')
     print()
+
+  for unit in unit_info:
+    print('{} at {} with health={}'.format(*unit))
 
 def parse_input():
   cave = []
