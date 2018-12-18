@@ -8,11 +8,11 @@ ELF_TYPE = 'E'
 GOBLIN_TYPE = 'G'
 
 class Unit:
-  def __init__(self, row, col, unit_type):
+  def __init__(self, row, col, attack_power, unit_type):
     self.row = row
     self.col = col
     self.unit_type = unit_type
-    self.attack_power = 3
+    self.attack_power = attack_power
     self.hit_points = 200
     self.is_alive = True
 
@@ -31,8 +31,23 @@ class Unit:
   def __str__(self):
     return self.unit_type
 
+
 def main():
-  cave, units = parse_input()
+  winner, result = solve(3, True)
+  print('part 1: winner={} result={}'.format(winner, result))
+
+  power = 4
+  while True:
+    winner, result = solve(power, False)
+
+    if result != 0:
+      print('part 2: winner={} result={}'.format(winner, result))
+      break
+
+    power += 1
+
+def solve(elves_attack_power, allow_elf_to_die):
+  cave, units = parse_input(elves_attack_power)
 
   G = generate_graph(cave)
 
@@ -72,6 +87,11 @@ def main():
       if enemies_in_range:
         attack(current_unit, enemies_in_range)
 
+        if not allow_elf_to_die:
+          dead_elves = [unit for unit in units if unit.unit_type == ELF_TYPE and not unit.is_alive]
+          if len(dead_elves) > 0:
+            return None, 0
+
     if all_enemies_dead:
       print('\nend')
       show_all(cave, units)
@@ -90,9 +110,9 @@ def main():
   for winner in winners:
     sum_hit_points += winner.hit_points
 
-  print('winner hit points:', sum_hit_points)
   print('last round:', round)
-  print('answer part1:', sum_hit_points * round)
+
+  return winner, sum_hit_points * round
 
 def attack(current_unit, enemies_in_range):
   enemy_to_attack = min(enemies_in_range, key = lambda enemy: enemy.hit_points)
@@ -131,7 +151,7 @@ def find_shortest_path(G, source, blockers, target_list):
   if len(min_distance_paths) == 1:
     return min_distance_paths[0]
 
-  return min(min_distance_paths)
+  return min(min_distance_paths, key=lambda path: path[-1])
 
 def bfs(G, source, blockers, target):
   blockers.remove(target)
@@ -147,8 +167,8 @@ def bfs(G, source, blockers, target):
   while q:
     node = q.popleft()
 
-    neighbors = [n for n in G.neighbors(node)]
-    neighbors = sorted(neighbors)
+    neighbors = list([n for n in G.neighbors(node)])
+    neighbors.sort()
 
     for next in neighbors:
       if next not in visited and next not in blockers:
@@ -193,7 +213,7 @@ def show_all(cave, units):
   for unit in unit_info:
     print('{} at {} with health={}'.format(*unit))
 
-def parse_input():
+def parse_input(elves_attack_power):
   cave = []
   units = []
 
@@ -203,10 +223,10 @@ def parse_input():
   for row in range(len(cave)):
     for col in range(len(cave[row])):
       if cave[row][col] == GOBLIN_TYPE:
-        units.append(Unit(row, col, GOBLIN_TYPE))
+        units.append(Unit(row, col, 3, GOBLIN_TYPE))
         cave[row][col] = '.'
       elif cave[row][col] == ELF_TYPE:
-        units.append(Unit(row, col, ELF_TYPE))
+        units.append(Unit(row, col, elves_attack_power, ELF_TYPE))
         cave[row][col] = '.'
   return cave, units
 
