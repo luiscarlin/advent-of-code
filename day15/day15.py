@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-import sys
 from collections import deque, defaultdict
 import networkx as nx
+import sys
 
 ELF_TYPE = 'E'
 GOBLIN_TYPE = 'G'
@@ -52,6 +52,8 @@ def main():
         continue
 
       enemies = [other for other in units if other.unit_type != current_unit.unit_type and other.is_alive]
+      current_unit_neighbors = get_neighbors(*current_unit.get_coords())
+      enemies_in_range = [enemy for enemy in enemies if enemy.get_coords() in current_unit_neighbors]
 
       if not enemies:
         print('GAME OVER! All your enemies are dead!')
@@ -60,11 +62,10 @@ def main():
         winner = current_unit.unit_type
         break
 
-      current_unit_neighbors = get_neighbors(*current_unit.get_coords())
-      enemies_in_range = [enemy for enemy in enemies if enemy.get_coords() in current_unit_neighbors]
-
       if not enemies_in_range:
         move(G, current_unit, units, enemies)
+
+        enemies = [other for other in units if other.unit_type != current_unit.unit_type and other.is_alive]
         current_unit_neighbors = get_neighbors(*current_unit.get_coords())
         enemies_in_range = [enemy for enemy in enemies if enemy.get_coords() in current_unit_neighbors]
 
@@ -72,6 +73,8 @@ def main():
         attack(current_unit, enemies_in_range)
 
     if all_enemies_dead:
+      print('\nend')
+      show_all(cave, units)
       break
 
     round += 1
@@ -89,12 +92,10 @@ def main():
 
   print('winner hit points:', sum_hit_points)
   print('last round:', round)
-
   print('answer part1:', sum_hit_points * round)
 
 def attack(current_unit, enemies_in_range):
   enemy_to_attack = min(enemies_in_range, key = lambda enemy: enemy.hit_points)
-
   enemy_to_attack.attacked_with_power(current_unit.attack_power)
 
 def move(G, current_unit, units, enemies ):
@@ -114,7 +115,14 @@ def find_shortest_path(G, source, blockers, target_list):
   for target in target_list:
     paths_to_all_enemies.append(bfs(G, source, blockers, target))
 
+  paths_to_all_enemies = [path for path in paths_to_all_enemies if path]
+
+  if not paths_to_all_enemies:
+    return []
+
   distances = [len(path) for path in paths_to_all_enemies]
+
+  distances = [d for d in distances if d != 0]
 
   min_distance = min(distances)
 
