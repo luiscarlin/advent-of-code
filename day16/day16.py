@@ -49,6 +49,8 @@ def main():
 
   number_samples = 0
 
+  possible_opcodes = defaultdict(set)
+
   for i, line in enumerate(lines):
     if 'Before' in line:
       before_reg = list(map(int, re.findall(r'-?\d+', line)))
@@ -56,14 +58,39 @@ def main():
       after_req = list(map(int, re.findall(r'-?\d+', lines[i + 2])))
 
       matching = 0
-      for operation in operations.values():
-        if operation(instruction, before_reg) == after_req:
+      for name, function in operations.items():
+        if function(instruction, before_reg) == after_req:
           matching += 1
+          possible_opcodes[name].add(instruction[0])
 
       if matching >= 3:
         number_samples += 1
 
   print('part 1', number_samples)
+
+  opcodes = defaultdict(str)
+
+  while possible_opcodes:
+    for name, opcode_set in possible_opcodes.items():
+      if len(opcode_set) == 1:
+        opcode = list(opcode_set)[0]
+        opcodes[opcode] = name
+
+        del possible_opcodes[name]
+
+        for v in possible_opcodes.values():
+          if opcode in v:
+            v.remove(opcode)
+
+        break
+
+  register = [0,0,0,0]
+
+  for line in open('part2_input.txt'):
+    instruction = list(map(int, re.findall(r'-?\d+', line)))
+    register = operations[opcodes[instruction[0]]](instruction, register)
+
+  print('part 2', register[0])
 
 def construct_all_operations():
   operations = {
