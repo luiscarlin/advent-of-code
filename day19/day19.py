@@ -90,5 +90,3 @@ if __name__ == '__main__':
   main()
 
 
-registers [a, b, [c], d, e, f]
-
