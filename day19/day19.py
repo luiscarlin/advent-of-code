@@ -4,13 +4,23 @@ from collections import defaultdict
 import re
 
 '''
-
+- Instruction pointer can be bound to a register so that it can be manipulated directly.
+- setr/seti can function as absolute jumps
+- addr/addi can function as relative jumps
+- other opcodes will also trigger jumps
+- #ip 1 - accesses to register 1 let the program indirectly access the instruction pointer itself
+- 6 registers => [0, 0, 0, 0, 0, 0] => 5 not bound to the ip, behave as normal
+- ip value is written to its register right before instruction is run
+- value of register is written to the ip immediately after instruction is run
+- add one to the ip to move to the next instruction (even if a prev instruction changed the ip)
+- ip matches the position of the instruction starting at 0
+- ip starts at 0
+- if ip gets out of list of instructions, program halts
 '''
-
 
 def construct_fn(operation_func):
   def func(instruction, before_reg):
-    opcode, regA, regB, regC = instruction
+    regA, regB, regC = instruction
 
     result = operation_func(regA, regB, before_reg)
 
@@ -46,10 +56,26 @@ def main():
 
   lines = open('input.txt').read().strip().split('\n')
 
-  ip = int(lines[0].split()[1])
+  ip_reg = int(lines[0].split()[1])
   program = lines[1:]
 
+  registers = [0, 0, 0, 0, 0, 0]
+  ip = 0
 
+  while ip < len(program):
+    registers[ip_reg] = ip
+
+    # get instruction
+    instruction = program[registers[ip_reg]].split()
+    name = instruction[0]
+    instruction = list(map(int, instruction[1:]))
+
+    registers = operations[name](instruction, registers)
+
+    # update ip from register
+    ip = registers[ip_reg] + 1
+
+  print('part 1', registers[0])
 
 if __name__ == '__main__':
   main()
