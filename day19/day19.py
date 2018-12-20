@@ -59,23 +59,36 @@ def main():
   ip_reg = int(lines[0].split()[1])
   program = lines[1:]
 
-  registers = [0, 0, 0, 0, 0, 0]
+  registers = [1, 0, 0, 0, 0, 0]
   ip = 0
+
+  num_loops = 0
 
   while ip < len(program):
     registers[ip_reg] = ip
 
-    # get instruction
     instruction = program[registers[ip_reg]].split()
     name = instruction[0]
     instruction = list(map(int, instruction[1:]))
 
+    print('IN:', registers, end = '')
+    print('    {} A={} B={} C={}'.format(name, instruction[0], instruction[1], instruction[2]), end = '')
+
     registers = operations[name](instruction, registers)
 
-    # update ip from register
+    print('    OUT:', registers)
+
     ip = registers[ip_reg] + 1
+
+    # if num_loops == 500:
+    #   break
+    num_loops += 1
 
   print('part 1', registers[0])
 
 if __name__ == '__main__':
   main()
+
+
+registers [a, b, [c], d, e, f]
+
