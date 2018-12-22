@@ -46,10 +46,10 @@ def main():
   ip_reg = int(lines[0].split()[1])
   program = lines[1:]
 
-  registers = [100, 0, 0, 0, 0, 0]
+  registers = [5745418, 0, 0, 0, 0, 0]
   ip = 0
 
-  loops =0
+  # loops =0
 
   while ip < len(program):
     registers[ip_reg] = ip
