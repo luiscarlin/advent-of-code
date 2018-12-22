@@ -46,10 +46,10 @@ def main():
   ip_reg = int(lines[0].split()[1])
   program = lines[1:]
 
-  registers = [5745418, 0, 0, 0, 0, 0]
+  registers = [100, 0, 0, 0, 0, 0]
   ip = 0
 
-  # loops =0
+  loops =0
 
   while ip < len(program):
     registers[ip_reg] = ip
@@ -58,18 +58,20 @@ def main():
     name = instruction[0]
     instruction = list(map(int, instruction[1:]))
 
+    # if ip == 20:
     print('IN:', registers, end = '')
     print('    {} A={} B={} C={}'.format(name, instruction[0], instruction[1], instruction[2]), end = '')
 
     registers = operations[name](instruction, registers)
 
+    # if ip == 20:
     print('    OUT:', registers)
 
     ip = registers[ip_reg] + 1
 
-    # loops += 1
-    # if loops == 50:
-    #   break
+    loops += 1
+    if loops == 50:
+      break
 
 if  __name__ == '__main__':
   main()
