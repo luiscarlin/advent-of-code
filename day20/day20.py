@@ -24,12 +24,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import deque, defaultdict
 
-# up, right, down, left
-# up = 0
-# right = 1
-# down = 2
-# left = 3
-dir = {
+directions = {
   'N': 0,
   'E': 1,
   'S': 2,
@@ -44,39 +39,31 @@ G = nx.Graph()
 line = open('input.txt').read()[1:-1]
 
 curr_r = curr_c = 0
-
 origin = (curr_r, curr_c)
+root_stack = []
 
-some_stack = []
-
-for i, char in enumerate(line):
+for idx, char in enumerate(line):
   if char is '(':
-    some_stack.append((curr_r, curr_c))
-    continue
-
-  if char is '|' and line[i + 1] == ')':
-    curr_r, curr_c = some_stack.pop()
-    continue
-
-  if char is '|':
-    curr_r, curr_c = some_stack[-1]
-    continue
-
-  if char is ')' and line[i - 1] is not '|':
-    some_stack.pop()
-    continue
-
-  if char in 'NSEW':
+    root_stack.append((curr_r, curr_c))
+  elif char is '|':
+    if line[idx + 1] == ')':
+      curr_r, curr_c = root_stack.pop()
+    else:
+      curr_r, curr_c = root_stack[-1]
+  elif char is ')' and line[idx - 1] is not '|':
+    root_stack.pop()
+  elif char in 'NSEW':
     prev_r = curr_r
     prev_c = curr_c
 
-    direction = dir[char]
-
-    curr_r += dr[direction]
-    curr_c += dc[direction]
+    curr_r += dr[directions[char]]
+    curr_c += dc[directions[char]]
 
     G.add_edge((prev_r, prev_c), (curr_r, curr_c))
 
+
+# find shortest to every node (going through nodes once)
 lengths = nx.algorithms.shortest_path_length(G, origin)
-print('part1:', max(lengths.values()))
-print('part2:', sum(1 for length in lengths.values() if length >= 1000))
+
+print('part 1', max(lengths.values()))
+print('part 2', sum(1 for length in lengths.values() if length >= 1000))
