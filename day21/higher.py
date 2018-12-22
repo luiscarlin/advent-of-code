@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
-import sys
+seen_ds = set()
+e_values = set()
 
-a = 5745418
+a = 100
 e = 0
 
 d = e | 65536
@@ -14,18 +15,10 @@ while True:
   e = ((e & 16777215) * 65899) & 16777215
 
   if d < 256:
-    if e == a:
-      print('done')
-      sys.exit(0)
+    if e not in e_values:
+      print(e)
+    e_values.add(e)
+    d = e | 65536
+    e = 14464005
   else:
-    c = 0
-
-  while True:
-    b = c + 1
-    b = b * 256
-
-    if (b > d):
-      d = c
-      break
-
-    c = c + 1
+     d = d // 256
