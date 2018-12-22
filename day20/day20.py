@@ -24,37 +24,36 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from collections import deque, defaultdict
 
-def dead_ends(G, source):
+# def dead_ends(G, source):
 
-  visited = set()
-  visited.add(source)
+#   visited = set()
+#   visited.add(source)
 
-  q = deque()
-  q.append(source)
+#   q = deque()
+#   q.append(source)
 
-  prev = defaultdict(tuple)
+#   prev = defaultdict(tuple)
 
-  dead_ends = []
+#   dead_ends = []
 
-  while q:
-    node = q.popleft()
+#   while q:
+#     node = q.popleft()
 
-    neighbors = list([n for n in G.neighbors(node)])
-    neighbors.sort()
+#     neighbors = list([n for n in G.neighbors(node)])
 
-    dead_end = True
+#     dead_end = True
 
-    for next in neighbors:
-      if next not in visited:
-        dead_end = False
-        q.append(next)
-        visited.add(next)
-        prev[next] = node
+#     for next in neighbors:
+#       if next not in visited:
+#         dead_end = False
+#         q.append(next)
+#         visited.add(next)
+#         prev[next] = node
 
-    if dead_end:
-      dead_ends.append(node)
+#     if dead_end:
+#       dead_ends.append(node)
 
-  return dead_ends
+#   return dead_ends
 
   # path = []
   # path.append(target)
@@ -99,7 +98,6 @@ curr_r = curr_c = 0
 origin = (curr_r, curr_c)
 
 some_stack = []
-# possible_ends = []
 
 for i, char in enumerate(line):
 
@@ -151,19 +149,33 @@ for i, char in enumerate(line):
 # for path in nx.all_simple_paths(G, source=0, target=3):
 #   print(path)
 
-ends = dead_ends(G, origin)
+# ends = dead_ends(G, origin)
 
-all_paths = []
-for end in ends:
-  path = nx.shortest_path(G, (0, 0), end)
-  all_paths.append(path)
-  # print(path)
+# all_paths = []
+# for end in ends:
+#   path = nx.shortest_path(G, (0, 0), end)
+#   all_paths.append(path)
+#   # print(path)
 
-most_doors = len(max(all_paths, key = lambda path: len(path))) - 1
 
-print('most doors', most_doors)
+# most_doors = len(max(all_paths, key = lambda path: len(path))) - 1
+
+# print('most doors', most_doors)
 # nx.draw(G, node_size = 20, with_labels = True)
 # plt.show()
+
+# min_graph = nx.ego_graph(G, n=origin, radius=1001)
+
+# print(len(G.nodes))
+# print(len(min_graph.nodes))
+# print('rooms after the 1000th door', len(G.nodes) - len(min_graph.nodes))
+
+lengths = nx.algorithms.shortest_path_length(G, origin)
+print('part1:', max(lengths.values()))
+print('part2:', sum(1 for length in lengths.values() if length >= 1000))
+# end_points = dead_ends(min_graph, origin)
+
+# print('rooms after the 1000th door',len(end_points))
 
 
 # print(len(path) -1)
