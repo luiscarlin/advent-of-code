@@ -2,6 +2,6 @@
 
 https://adventofcode.com/
 
-## Get Started
+### Get Started
 
 `./setup.sh`
