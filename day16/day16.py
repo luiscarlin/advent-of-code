@@ -113,7 +113,5 @@ def construct_all_operations():
   }
   return operations
 
-
-
 if __name__ == '__main__':
   main()
