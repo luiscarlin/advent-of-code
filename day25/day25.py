@@ -17,5 +17,4 @@ for (x1, y1, z1, w1) in points:
     if distance <= 3:
       G.add_edge((x1, y1, z1, w1), (x2, y2, z2, w2))
 
-
 print('part 1', nx.number_connected_components(G))
