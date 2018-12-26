@@ -1,47 +1,11 @@
 #!/usr/bin/env python3
 
-'''
-
-part 1
-======
-- region types = rocky, narrow, wet
-- regions = X, Y (x and y >= 0)
-- input: depth and coordinate of the target
-- mouth of cave = (0, 0)
-- geological index => erosion level
-
-- to find geological index (follow the rule that first applies):
-  - The region at 0,0 (the mouth of the cave) has a geologic index of 0.
-  - The region at the coordinates of the target has a geologic index of 0.
-  - If the region's Y coordinate is 0, the geologic index is its X coordinate times 16807.
-  - If the region's X coordinate is 0, the geologic index is its Y coordinate times 48271.
-  - Otherwise, the region's geologic index is the result of multiplying the erosion levels of the regions at X-1,Y and X,Y-1.
-
-- to find erosion level:  A region's erosion level is its geologic index plus the cave system's depth, all modulo 20183. Then:
-
-- to find region type:
-  - If the erosion level modulo 3 is 0, the region's type is rocky.
-  - If the erosion level modulo 3 is 1, the region's type is wet.
-  - If the erosion level modulo 3 is 2, the region's type is narrow.
-
-- risk levels: 0 for rocky regions, 1 for wet regions, and 2 for narrow regions.
-
-- need to find risk level for the area where 0,0 and the target are at corners
-
-part 2
-======
-
-- 2 tools: climbing gear and torch
-
-- In rocky regions, you can use the climbing gear or the torch. You cannot use neither (you'll likely slip and fall). tools = [gear, torch]
-- In wet regions, you can use the climbing gear or neither tool. You cannot use the torch (if it gets wet, you won't have a light source). tools = [gear, neither]
-- In narrow regions, you can use the torch or neither tool. You cannot use the climbing gear (it's too bulky to fit). tools = [torch, neither]
-
-
-- You can move to an adjacent region (up, down, left, or right; never diagonally) if your currently equipped tool allows you to enter that region. Moving to an adjacent region takes one minute. (For example, if you have the torch equipped, you can move between rocky and narrow regions, but cannot enter wet regions.)
-'''
 from collections import defaultdict
 import networkx as nx
+
+rocky, wet, narrow = 0, 1, 2
+torch, climbing_gear, neither = 0, 1, 2
+allowed_items = { rocky: (torch, climbing_gear), wet: (climbing_gear, neither), narrow: (torch, neither) }
 
 def find_index(row, col, target_r, target_c, erosion_levels):
   if (row, col) is (0, 0):
@@ -61,12 +25,25 @@ def find_index(row, col, target_r, target_c, erosion_levels):
 def get_erosion_level(index, cave_depth):
   return (index + cave_depth) % 20183
 
-def get_region_type(erosion_level):
-  types = ['r', 'w', 'n']
+def populate_cave_map(depth, corner, target):
+  grid = {}
 
-  idx = erosion_level % 3
+  for row in range(0, corner[0] + 1):
+    for col in range(0, corner[1] + 1):
+      if (row, col) in [(0, 0), target]:
+        index = 0
+      elif col is 0:
+        index = row * 16807
+      elif row is 0:
+        index = col * 48271
+      else:
+        index = grid[(row - 1, col)][1] * grid[(row, col - 1)][1]
 
-  return types[idx]
+      erosion_level = (index + depth) % 20183
+      risk = erosion_level % 3
+      grid[(row, col)] = (index, erosion_level, risk)
+
+  return grid
 
 def part1():
   cave_depth = 11394
@@ -75,12 +52,6 @@ def part1():
   target_c = 701
 
   erosion_levels = defaultdict(int)
-
-  risk_levels = {
-    'r': 0,
-    'w': 1,
-    'n': 2
-  }
 
   risk = 0
 
@@ -92,15 +63,70 @@ def part1():
       erosion_level = get_erosion_level(index, cave_depth)
       erosion_levels[(row, col)] = erosion_level
 
-      region_type = get_region_type(erosion_level)
+      region_type = erosion_level % 3
 
-      risk += risk_levels[region_type]
+      risk += region_type
 
   print('part 1', risk)
 
+def part2():
+  cave_depth = 11394
+  target = (7, 701)
+  corner = (target[0] + 100, target[1] + 100)
+
+  cave = populate_cave_map(cave_depth, corner, target)
+
+  grid = {coord: values[2] for coord, values in (cave).items()}
+  graph = create_graph(grid, corner, target)
+
+  shortest_weighted_distance = nx.dijkstra_path_length(graph, (0, 0, torch), (*target, torch))
+
+  print('part 2', shortest_weighted_distance)
+
+def create_graph(grid, corner, target):
+  graph = nx.Graph()
+  for row in range(corner[0] + 1):
+    for col in range(corner[1] + 1):
+      items = allowed_items[grid[(row, col)]]
+      graph.add_edge((row, col, items[0]), (row, col, items[1]), weight = 7)
+      for d_r, d_c in ((0, 1), (0, -1), (1, 0), (-1, 0)):
+        new_row, new_col = row+d_r, col+d_c
+
+        if 0 <= new_row <= corner[0] and 0 <= new_col <= corner[1]:
+          new_items = allowed_items[grid[(new_row, new_col)]]
+          for item in set(items).intersection(set(new_items)):
+            graph.add_edge((row, col, item), (new_row, new_col, item), weight = 1)
+  return graph
+
+def get_weighted_graph(grid, target, corner):
+  G = nx.Graph()
+
+  for row in range(corner[0] + 1):
+    for col in range(corner[1] + 1):
+      region_type = grid[(row, col)]
+
+      items = allowed_items[region_type]
+
+      G.add_edge((row, col, items[0]), (row, col, items[1]), weight = 7)
+
+      for (dr, dc) in [(0, 1), (1, 0), (-1, 0), (0, -1)]:
+        new_row = row + dr
+        new_col = col + dc
+
+        if 0 <= new_row <= corner[0] and 0 <= new_col <= corner[1]:
+          new_region_type = grid[(new_row, new_col)]
+          new_items = allowed_items[new_region_type]
+
+          common_items = set(new_items).intersection(set(items))
+
+          for item in common_items:
+            G.add_edge((row, col, item), (new_row, new_col, item), weight = 1)
+
+  return G
+
 def main():
   part1()
-  # part2()
+  part2()
 
 if __name__ == '__main__':
   main()
