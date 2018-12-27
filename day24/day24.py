@@ -99,24 +99,26 @@ def calculate_damage(attacker, defender):
 
   return damage
 
-def attack(attacker, defender):
+def attack(attacker, defender, show=False):
   damage = calculate_damage(attacker, defender)
 
   dead = defender.attacked_with(damage)
 
   attacker_group_type = 'Immune System' if attacker.group_type == IMMUNITY_TYPE else 'Infection'
-  print('{} group {} attacks defending group {}, killing {} units'.format(attacker_group_type, attacker.group_id, defender.group_id, dead))
+  if show:
+    print('{} group {} attacks defending group {}, killing {} units'.format(attacker_group_type, attacker.group_id, defender.group_id, dead))
 
-def defender_comparator(attacker, defender):
+def defender_comparator(attacker, defender, show=False):
   damage = calculate_damage(attacker, defender)
 
   attacker_group_type = 'Immune System' if attacker.group_type == IMMUNITY_TYPE else 'Infection'
-  print('{} group {} would deal defending group {} {} damage'.format(attacker_group_type, attacker.group_id, defender.group_id, damage))
+  if show:
+    print('{} group {} would deal defending group {} {} damage'.format(attacker_group_type, attacker.group_id, defender.group_id, damage))
 
   return (damage, defender.get_effective_power(), defender.initiative)
 
-def battle(groups):
-  show_stats(groups)
+def battle(groups, show=False):
+  if show: show_stats(groups)
 
   copy_groups = copy.deepcopy(groups)
 
@@ -127,29 +129,31 @@ def battle(groups):
   pairs = []
 
   # find target
-  print()
+  if show: print()
+
   for attacker in sorted_cp_groups:
     possible_targets = [group for group in sorted_cp_groups if group.group_type != attacker.group_type and group not in chosen]
 
     if possible_targets:
-      target = max(possible_targets, key=lambda target: defender_comparator(attacker, target))
+      target = max(possible_targets, key=lambda target: defender_comparator(attacker, target, show))
 
-      chosen.add(target)
+      if calculate_damage(attacker, target) != 0:
+        chosen.add(target)
 
-      pairs.append((attacker, target))
+        pairs.append((attacker, target))
 
   # attack
-  print()
+  if show: print()
 
   for pair in sorted(pairs, key=lambda pair: pair[0].initiative, reverse=True):
     attacker, target = pair
 
     if attacker.is_alive and target.is_alive:
-      attack(attacker, target)
+      attack(attacker, target, show)
 
   return copy_groups
 
-def main():
+def part1():
   _, immunity_lines, infection_lines = re.split('Immune System:|Infection:', open('./day24/input.txt').read())
 
   groups = get_groups(immunity_lines, IMMUNITY_TYPE)
@@ -158,7 +162,7 @@ def main():
   winning_army = 0
 
   while True:
-    groups = battle(groups)
+    groups = battle(groups, show=True)
 
     immunity_groups_alive = [group for group in groups if group.group_type == IMMUNITY_TYPE and group.is_alive]
     infection_groups_alive = [group for group in groups if group.group_type == INFECTION_TYPE and group.is_alive]
@@ -172,6 +176,65 @@ def main():
       break
 
   print('part 1', sum(group.num_units for group in winning_army))
+
+def part2():
+  _, immunity_lines, infection_lines = re.split('Immune System:|Infection:', open('./day24/input.txt').read())
+
+  original_groups = get_groups(immunity_lines, IMMUNITY_TYPE)
+  original_groups.extend(get_groups(infection_lines, INFECTION_TYPE))
+
+  winning_army = 0
+  boost = 30
+
+  while True:
+    # apply boost
+    groups = copy.deepcopy(original_groups)
+
+    for group in groups:
+      if group.group_type == IMMUNITY_TYPE:
+        group.attack_damage += boost
+
+    print('==> applying boost', boost)
+
+    draw = False
+    winning_type = ''
+
+    while True:
+      before_all_units = sum(group.num_units for group in groups)
+
+      groups = battle(groups, show=False)
+
+      after_all_units = sum(group.num_units for group in groups)
+
+      if before_all_units == after_all_units:
+        draw == True
+        break
+
+      immunity_groups_alive = [group for group in groups if group.group_type == IMMUNITY_TYPE and group.is_alive]
+      infection_groups_alive = [group for group in groups if group.group_type == INFECTION_TYPE and group.is_alive]
+
+      if len(infection_groups_alive) == 0:
+        winning_army = immunity_groups_alive
+        winning_type = IMMUNITY_TYPE
+        break
+
+      if len(immunity_groups_alive) == 0:
+        winning_army = infection_groups_alive
+        winning_type = INFECTION_TYPE
+        break
+
+    if draw:
+      continue
+    elif winning_type == IMMUNITY_TYPE:
+      break
+
+    boost += 1
+
+  print('part 2', sum(group.num_units for group in winning_army))
+
+def main():
+  part1()
+  part2()
 
 if __name__ == '__main__':
   main()
