@@ -1,7 +1,10 @@
-## Advent of Code 2018
+# Advent of Code 2018
 
-https://adventofcode.com/
+Solutions to [Advent of Code 2018](https://adventofcode.com/2018) in Python3
 
-### Get Started
+## Get Started
 
-`./setup.sh`
+```bash
+virtualenv -p python3 .env && source .env/bin/activate && pip install -r requirements.txt
+```
+
