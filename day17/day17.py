@@ -1,19 +1,38 @@
-'''
-x = col
-y = row
-'''
+from collections import namedtuple
 
 UP = 0
 RIGHT = 1
 DOWN = 2
 LEFT = 3
 
-COL_DIR = [0, 1, 0, -1]
-ROW_DIR = [-1, 0, 1, 0]
+X_DIR = [0, 1, 0, -1]
+Y_DIR = [-1, 0, 1, 0]
+
+WATER_SOURCE = (500, 0)
+
+def get_point(dir, from_point):
+  return (from_point[0] + X_DIR[dir], from_point[1] + Y_DIR[dir])
+
+def print_map(clay, flowing, still, x1=300, x2=700, y1=0, y2=1000):
+  def char(p):
+    if p == WATER_SOURCE:
+      return '+'
+    elif p in clay:
+      return '#'
+    elif p in both:
+      return '$'
+    elif p in still:
+      return '~'
+    elif p in flowing:
+      return '|'
+    else:
+      return '.'
+
+  both = flowing & still
+  print('\n'.join(''.join(char((x, y)) for x in range(x1, x2 + 1)) for y in range(y1, y2 + 1)))
 
 def get_clay():
-  # (col, row)
-  clay = []
+  clay = set()
 
   for line in open('./day17/input.txt').read().split('\n'):
     row = []
@@ -50,75 +69,75 @@ def get_clay():
 
     if len(col) == 1:
       for r in row:
-        clay.append((col[0], r ))
+        clay.add((col[0], r ))
     else:
       for c in col:
-        clay.append((c, row[0]))
+        clay.add((c, row[0]))
 
   return clay
 
-def print_map(water_source,  clay, water_flow):
-  cols = [entry[0] for entry in clay]
-  cols.append(water_source[0])
-
-  min_col, max_col = min(cols), max(cols)
-
-  rows = [entry[1] for entry in clay]
-  rows.append(water_source[1])
-
-  min_row, max_row = min(rows), max(rows)
-
-  for row in range(min_row, max_row + 1):
-    for col in range(min_col, max_col + 1):
-      point = (col, row)
-
-      char_to_print = '.'
-
-      if point in clay:
-        char_to_print = '#'
-      elif point == water_source:
-        char_to_print = '+'
-      elif point in water_flow:
-        char_to_print = '|'
-
-      print(char_to_print, end='')
-
-    print()
-
-def simulate(water_source, clay):
-
-  water_flow = []
-
-  print('\nINITIALLY')
-  print_map(water_source, clay, water_flow)
-
-  for time in range(1, 10):
-    flow(water_source, water_flow, clay)
-
-    print('\nAFTER TIME', time)
-    print_map(water_source, clay, water_flow)
-
-def flow(water_source, water_flow, clay):
-  if len(water_flow) is 0:
-    water_flow.append(get_point(DOWN, water_source))
-    return
-
-  for flow in water_flow:
-    point_down = get_point(DOWN, flow)
-
-    if point_down not in water_flow and point_down not in clay:
-      water_flow.append(point_down)
-      return
-
-def main():
+def simulate():
   clay = get_clay()
 
-  water_source = (500, 0)
+  lowest_y, highest_y = max(p[1] for p in clay), min(p[1] for p in clay)
+  flowing, still, to_fall, to_spread = set(), set(), set(), set()
 
-  simulate(water_source, clay)
+  to_fall.add(WATER_SOURCE)
 
-def get_point(dir, from_point):
-  return (from_point[0] + COL_DIR[dir], from_point[1] + ROW_DIR[dir])
+  while to_fall or to_spread:
+    while to_fall:
+      tf = to_fall.pop()
+      res = fall(tf, lowest_y, clay, flowing)
+      if res:
+        to_spread.add(res)
+
+    while to_spread:
+      ts = to_spread.pop()
+      rl, rr = spread(ts, clay, flowing, still)
+      if not rr and not rl:
+        to_spread.add(get_point(UP, ts))
+      else:
+        if rl:
+          to_fall.add(rl)
+        if rr:
+          to_fall.add(rr)
+
+  # print_map(clay, flowing, still, y2=lowest_y)
+  total_water = len([p for p in (flowing | still) if p[1] >= highest_y])
+  still_water = len([p for p in still if p[1] >= highest_y])
+
+  print('Part 1 => Total Water = {}'.format(total_water))
+  print('Part 2 => Still Water = {}'.format(still_water))
+
+def fall(pos, ly, clay, flowing):
+  while pos[1] < ly:
+    posd = get_point(DOWN, pos)
+    if posd not in clay:
+      flowing.add(posd)
+      pos = posd
+    elif posd in clay:
+      return pos
+  return None
+
+def spread(pos, clay, flowing, still):
+  temp = set()
+  pl = spread_r(pos, LEFT, clay, still, temp)
+  pr = spread_r(pos, RIGHT, clay, still, temp)
+  if not pl and not pr:
+    still.update(temp)
+  else:
+    flowing.update(temp)
+  return pl, pr
+
+def spread_r(pos, off, clay, still, temp):
+  pos1 = pos
+  while pos1 not in clay:
+    temp.add(pos1)
+    pos2 = get_point(DOWN, pos1)
+    if pos2 not in clay and pos2 not in still:
+      return pos1
+    pos1 = get_point(off, pos1)
+  return None
 
 if __name__ == '__main__':
-  main()
+  simulate()
